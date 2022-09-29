@@ -21,9 +21,9 @@ class AutenticationHandler {
       this._validator.validatePostAuthPayload(request.payload);
       const { username, password } = request.payload;
 
-      const id = await this._usersService.verifyCredential(username, password);
+      const id = await this._usersService.verifyUserCredential(username, password);
 
-      const accessToken =  this._tokenManager.generateAcessToken({ id });
+      const accessToken =  this._tokenManager.generateAccessToken({ id });
       const refreshToken = this._tokenManager.generateRefreshToken({ id });
 
       await this._authService.addRefreshToken(refreshToken);
@@ -61,9 +61,9 @@ class AutenticationHandler {
       this._validator.validatePutAuthPayload(request.payload);
       const { refreshToken } = request.payload;
       await this._authService.verifyRefreshToken(refreshToken);
-      const { id } = this._tokenManager.verifyRefreshToken(refreshToken);
+      const { id }  = this._tokenManager.verifyRefreshToken(refreshToken);
 
-      const accessToken = await this._tokenManager.generateAcessToken({ id });
+      const accessToken = await this._tokenManager.generateAccessToken({ id });
 
       return {
         status: 'success',
@@ -112,7 +112,7 @@ class AutenticationHandler {
       }
       const response = h.response({
         status: 'error',
-        message: 'Terjadi kesalahan pada server kami',
+        message: err.message,
       });
       response.code(500);
       return response;

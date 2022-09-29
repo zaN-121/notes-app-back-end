@@ -6,7 +6,7 @@ const {
 } = require('./schema');
 
 const AutenticationValidator = {
-  valditatePostAuthPayload: (payload) => {
+  validatePostAuthPayload: (payload) => {
     const validationResult = postAuthenticationValidator.validate(payload);
     if (validationResult.error) {
       throw new AuthenticationsError(validationResult.error.message);
