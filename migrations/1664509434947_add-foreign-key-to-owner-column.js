@@ -1,6 +1,5 @@
 /* eslint-disable camelcase */
 
-const { PgLiteral } = require("node-pg-migrate");
 
 exports.up = pgm => {
     pgm.sql("INSERT INTO users(id, username, password, fullname) VALUES ('old_notes','old_notes','old_notes','old_notes')");
