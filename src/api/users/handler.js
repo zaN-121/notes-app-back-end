@@ -1,3 +1,4 @@
+const { response } = require("@hapi/hapi/lib/validation");
 const ClientError = require("../../exceptions/ClientError");
 
 class UsersHandler {
@@ -7,6 +8,7 @@ class UsersHandler {
 
     this.postUserHandler = this.postUserHandler.bind(this);
     this.getUserByIdHandler = this.getUserByIdHandler.bind(this);
+    this.getUsersByUsernameHandler = this.getUsersByUsernameHandler.bind(this);
   }
 
   async postUserHandler(request, h) {
@@ -35,6 +37,37 @@ class UsersHandler {
       const response = h.response({
         status: 'error',
         message: err.message,
+      });
+      response.code(500);
+      return response;
+    }
+  }
+
+  async getUsersByUsernameHandler(request, h) {
+    try {
+      const { username } = request.query;
+      const result = await this._service.getUsersByUsername(username);
+  
+      const response = h.response({
+        status: 'success',
+        data: {
+          users: result,
+        },
+      });
+      response.code(200);
+      return response;
+    } catch (error) {
+      if (error instanceof ClientError) {
+        const response = h.response({
+          status: 'success',
+          message: error.message,
+        });
+        response.code(error.statusCode);
+        return response;
+      }
+      const response = h.response({
+        status: 'error',
+        message: 'Terjadi kesalahan pada server kami',
       });
       response.code(500);
       return response;
