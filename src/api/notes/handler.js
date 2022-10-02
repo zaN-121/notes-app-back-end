@@ -52,18 +52,22 @@ class NotesHandler {
   }
 
   async getNotesHandler(request, h) {
-    const { id: credentialId } = request.auth.credentials;
-
-    const notes = await this._service.getNotes(credentialId);
-
-    const response = h.response({
-      status: 'success',
-      data: {
-        notes,
-      },
-    });
-    response.code(200);
-    return response;
+    try {
+      const { id: credentialId } = request.auth.credentials;
+  
+      const notes = await this._service.getNotes(credentialId);
+  
+      const response = h.response({
+        status: 'success',
+        data: {
+          notes,
+        },
+      });
+      response.code(200);
+      return response;
+    } catch (error) {
+      return error.message
+    }
   }
 
   async getNoteByIdHandler(request, h) {
@@ -71,7 +75,7 @@ class NotesHandler {
       const { id } = request.params;
       const { id: credentialId } = request.auth.credentials;
 
-      await this._service.verifyNoteOwner(id, credentialId);
+      await this._service.verifyNoteAccess(id, credentialId);
       const note = await this._service.getNoteById(id);
 
       const response = h.response({
@@ -107,7 +111,7 @@ class NotesHandler {
       const { id } = request.params;
       const { id: credentialId } = request.auth.credentials;
 
-      await this._service.verifyNoteOwner(id, credentialId)
+      await this._service.verifyNoteAccess(id, credentialId)
       await this._service.editNoteById(id, request.payload);
 
       const response = h.response({
