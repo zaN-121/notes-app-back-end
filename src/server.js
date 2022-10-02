@@ -11,24 +11,29 @@ const Jwt = require('@hapi/jwt');
 const notes = require('./api/notes');
 const users = require('./api/users');
 const auth = require('./api/authentications');
+const collab = require('./api/collaborations');
 
 // services
 const NotesService = require('./services/postgres/NotesService');
 const UsersService = require('./services/postgres/UsersService');
 const AuthenticationsService = require('./services/postgres/AuthenticationsServices');
+const CollaborationsService = require('./services/postgres/CollaborationsService');
 
 // validator
 const NoteValidator = require('./validator/notes');
 const UsersValidator = require('./validator/users');
 const authValidator = require('./validator/authentications');
+const collabValidator = require('./validator/collaborations');
 
 // token
 const tokenManager = require('./tokenize/TokenManager');
 
 const init = async () => {
+  const collaborationsService = new CollaborationsService();
   const usersService = new UsersService();
-  const notesService = new NotesService();
+  const notesService = new NotesService(collaborationsService);
   const authService = new AuthenticationsService()
+
   const server = Hapi.server({
     port: process.env.PORT,
     host: process.env.HOST,
@@ -85,6 +90,14 @@ const init = async () => {
         validator: authValidator,
       },
     },
+    {
+      plugin: collab,
+      options: {
+        collaborationsService,
+        notesService,
+        validator: collabValidator,
+      }
+    }
   ]);
   
   await server.start();
