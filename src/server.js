@@ -12,18 +12,21 @@ const notes = require('./api/notes');
 const users = require('./api/users');
 const auth = require('./api/authentications');
 const collab = require('./api/collaborations');
+const _exports = require('./api/exports');
 
 // services
 const NotesService = require('./services/postgres/NotesService');
 const UsersService = require('./services/postgres/UsersService');
 const AuthenticationsService = require('./services/postgres/AuthenticationsServices');
 const CollaborationsService = require('./services/postgres/CollaborationsService');
+const ProducerService = require('./services/rabbitmq/ProducerService');
 
 // validator
 const NoteValidator = require('./validator/notes');
 const UsersValidator = require('./validator/users');
 const authValidator = require('./validator/authentications');
 const collabValidator = require('./validator/collaborations');
+const exportsValidator = require('./validator/exports');
 
 // token
 const tokenManager = require('./tokenize/TokenManager');
@@ -32,7 +35,7 @@ const init = async () => {
   const collaborationsService = new CollaborationsService();
   const usersService = new UsersService();
   const notesService = new NotesService(collaborationsService);
-  const authService = new AuthenticationsService()
+  const authService = new AuthenticationsService();
 
   const server = Hapi.server({
     port: process.env.PORT,
@@ -97,7 +100,14 @@ const init = async () => {
         notesService,
         validator: collabValidator,
       }
-    }
+    },
+    {
+      plugin: _exports,
+      options: {
+        service: ProducerService,
+        validator: exportsValidator,
+      },
+    },
   ]);
   
   await server.start();
