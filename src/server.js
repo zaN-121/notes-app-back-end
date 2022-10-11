@@ -1,5 +1,6 @@
 // environment
 require('dotenv').config();
+const path = require('path');
 
 //server
 const Hapi = require('@hapi/hapi');
@@ -7,12 +8,16 @@ const Hapi = require('@hapi/hapi');
 //jwt
 const Jwt = require('@hapi/jwt');
 
+//inert
+const Inert = require('@hapi/inert');
+
 // plugin
 const notes = require('./api/notes');
 const users = require('./api/users');
 const auth = require('./api/authentications');
 const collab = require('./api/collaborations');
 const _exports = require('./api/exports');
+const uploads = require('./api/uploads');
 
 // services
 const NotesService = require('./services/postgres/NotesService');
@@ -20,6 +25,7 @@ const UsersService = require('./services/postgres/UsersService');
 const AuthenticationsService = require('./services/postgres/AuthenticationsServices');
 const CollaborationsService = require('./services/postgres/CollaborationsService');
 const ProducerService = require('./services/rabbitmq/ProducerService');
+const StorageService = require('./services/storage/StorageService');
 
 // validator
 const NoteValidator = require('./validator/notes');
@@ -27,6 +33,7 @@ const UsersValidator = require('./validator/users');
 const authValidator = require('./validator/authentications');
 const collabValidator = require('./validator/collaborations');
 const exportsValidator = require('./validator/exports');
+const UploadsValidator = require('./validator/uploads');
 
 // token
 const tokenManager = require('./tokenize/TokenManager');
@@ -36,6 +43,7 @@ const init = async () => {
   const usersService = new UsersService();
   const notesService = new NotesService(collaborationsService);
   const authService = new AuthenticationsService();
+  const storageService = new StorageService(path.resolve(__dirname, 'api/uploads/file/images'));
 
   const server = Hapi.server({
     port: process.env.PORT,
@@ -49,7 +57,10 @@ const init = async () => {
   
   await server.register([
     {
-    plugin: Jwt,
+      plugin: Jwt,
+    },
+    {
+      plugin: Inert,
     },
   ]);
   
@@ -106,6 +117,13 @@ const init = async () => {
       options: {
         service: ProducerService,
         validator: exportsValidator,
+      },
+    },
+    {
+      plugin: uploads,
+      options: {
+        service: storageService,
+        validator: UploadsValidator,
       },
     },
   ]);
