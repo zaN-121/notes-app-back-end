@@ -11,6 +11,7 @@ const Jwt = require('@hapi/jwt');
 //inert
 const Inert = require('@hapi/inert');
 
+
 // plugin
 const notes = require('./api/notes');
 const users = require('./api/users');
@@ -26,6 +27,7 @@ const AuthenticationsService = require('./services/postgres/AuthenticationsServi
 const CollaborationsService = require('./services/postgres/CollaborationsService');
 const ProducerService = require('./services/rabbitmq/ProducerService');
 const StorageService = require('./services/S3/StorageService');
+const CacheService = require('./services/redis/CacheService');
 
 // validator
 const NoteValidator = require('./validator/notes');
@@ -39,12 +41,13 @@ const UploadsValidator = require('./validator/uploads');
 const tokenManager = require('./tokenize/TokenManager');
 
 const init = async () => {
-  const collaborationsService = new CollaborationsService();
+  const cacheService = new CacheService();
   const usersService = new UsersService();
-  const notesService = new NotesService(collaborationsService);
+  const collaborationsService = new CollaborationsService(cacheService);
+  const notesService = new NotesService(collaborationsService, cacheService);
   const authService = new AuthenticationsService();
   const storageService = new StorageService();
-
+  
   const server = Hapi.server({
     port: process.env.PORT,
     host: process.env.HOST,

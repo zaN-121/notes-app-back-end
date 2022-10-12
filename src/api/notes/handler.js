@@ -44,7 +44,7 @@ class NotesHandler {
       // server error default
       const response = h.response({
         status: 'error',
-        message: 'Maaf, terjadi kegagalan pada server kami',
+        message: 'Terjadi kesalahan pada server kami',
       });
       response.code(500);
       return response;
